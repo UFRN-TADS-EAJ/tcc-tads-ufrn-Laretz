@@ -19,15 +19,16 @@ O texto monográfico do TCC não precisa ser incluído neste repositório, no en
 
 # Identificação do Projeto
 
-Aluno(a):
+Aluno(a): Renato Ramon de Carvalho Nobre Albuquerque
 
-E-mail:
+E-mail: renatophoenix123@gmail.com
 
-Orientador:
+Orientador: Antonino Alves Feitosa Neto
 
-Semestre/Ano:
 
-Descrição do Projeto:
+Semestre/Ano: 2026.1
+
+Descrição do Projeto: Sistema web para auxiliar coordenação do TADS no processo de gerenciamento das alocações acadêmicas dentro da EAJ, organizando informações das turmas, docentes, horários e espaços físicos.
 
 
 Descrever brevemente:
