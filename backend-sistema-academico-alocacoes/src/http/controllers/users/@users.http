@@ -1,0 +1,133 @@
+@baseURL = http://localhost:3333
+@authToken = {{login.response.body.token}}
+
+### 1. Registrar novo usuário (Professor)
+POST {{baseURL}}/users
+Content-Type: application/json
+
+{
+  "nome": "João Silva",
+  "email": "joao.silva@email.com",
+  "senha": "123456",
+  "role": "PROFESSOR",
+  "especializacao": "Matemática",
+  "carga_horaria_max": 40,
+  "preferencia": "Manhã"
+}
+
+### 2. Registrar novo usuário (Admin)
+POST {{baseURL}}/users
+Content-Type: application/json
+
+{
+  "nome": "Maria Admin",
+  "email": "maria.admin@email.com",
+  "senha": "123456",
+  "role": "ADMIN"
+}
+
+### 3. Registrar novo usuário (Coordenador)
+POST {{baseURL}}/register
+Content-Type: application/json
+
+{
+  "nome": 1,
+  "email": "carlos.coord@email.com",
+  "senha": "123456",
+  "role": "COORDENADOR",
+  "especializacao": "Gestão Acadêmica"
+}
+
+### 4. Autenticar usuário (Login)
+# @name login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "renatodebone1@email.com",
+  "senha": "123123"
+}
+
+### 5. Renovar token
+PATCH {{baseURL}}/token/refresh
+Content-Type: application/json
+
+### 6. Verificar token
+GET {{baseURL}}/verify-token
+Authorization: Bearer {{authToken}}
+
+### 7. Obter perfil do usuário autenticado
+GET {{baseURL}}/me
+Authorization: Bearer {{authToken}}
+
+### 8. Listar todos os usuários
+GET {{baseURL}}/users
+Authorization: Bearer {{authToken}}
+
+### 9. Listar usuários com paginação
+GET {{baseURL}}/users?page=1
+Authorization: Bearer {{authToken}}
+
+### 10. Buscar usuários por nome
+GET {{baseURL}}/users?search=João
+Authorization: Bearer {{authToken}}
+
+### 11. Buscar usuário por ID (Admin apenas)
+GET {{baseURL}}/users/71a03754-a644-46e8-9b17-c7440ec4b575
+Authorization: Bearer {{authToken}}
+
+### 12. Atualizar usuário (Admin apenas)
+PUT {{baseURL}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nome": "João Silva Atualizado",
+  "email": "joao.silva.novo@email.com",
+  "role": "COORDENADOR",
+  "especializacao": "Matemática Aplicada",
+  "carga_horaria_max": 35,
+  "preferencia": "Tarde"
+}
+
+### 13. Excluir usuário (Admin apenas)
+DELETE {{baseURL}}/users/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### ===== CENÁRIOS DE TESTE =====
+
+### 14. Teste - Login com credenciais inválidas
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "usuario@inexistente.com",
+  "senha": "senhaerrada"
+}
+
+### 15. Teste - Registrar usuário com email duplicado
+POST {{baseURL}}/users
+Content-Type: application/json
+
+{
+  "nome": "Usuário Duplicado",
+  "email": "joao.silva@email.com",
+  "senha": "123456",
+  "role": "PROFESSOR"
+}
+
+### 16. Teste - Acesso sem token
+GET {{baseURL}}/me
+
+### 17. Teste - Acesso com token inválido
+GET {{baseURL}}/me
+Authorization: Bearer token_invalido
+
+### 18. Teste - Professor tentando acessar rota admin
+GET {{baseURL}}/users/123
+Authorization: Bearer {{professorToken}}
+
+### ===== VARIÁVEIS PARA TESTES =====
+# Substitua pelos IDs reais após criar os usuários
+@userId = 550e8400-e29b-41d4-a716-446655440000
+@professorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...

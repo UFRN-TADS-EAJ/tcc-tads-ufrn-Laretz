@@ -1,0 +1,116 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Disciplinas
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "admin@admin.com",
+  "senha": "123123"
+}
+
+###
+
+# Listar turmas (para pegar um turmaId válido)
+# @name GetTurmasTodas
+GET {{baseURL}}/turmas/todas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# Listar todas as disciplinas
+# @name GetDisciplinas
+GET {{baseURL}}/disciplinas
+Content-Type: application/json
+
+###
+
+# @name GetDisciplinasComProgresso
+GET {{baseURL}}/disciplinas/com-progresso?turmaId=a17e1658-83f1-4029-9e65-5a006bdd6a94
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name GetGradeHorariosTurma
+GET {{baseURL}}/turmas/3d38f9d8-2265-48ea-af2e-88ca9fe1b972/grade-horarios
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name GetDisciplinaById
+GET {{baseURL}}/disciplinas/43357332-f437-4344-b8fc-3fcdeca85f81
+Content-Type: application/json
+
+###
+
+# @name CreateDisciplina
+POST {{baseURL}}/disciplinas
+Content-Type: application/json
+
+{
+  "nome": "Algoritmos e Estruturas de Dados",
+  "codigo": "AED001",
+  "carga_horaria": 80,
+  "semestre": 3,
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186",
+  "data_inicio": "2024-02-01T00:00:00.000Z",
+  "data_fim_prevista": "2024-06-30T23:59:59.000Z"
+}
+
+###
+
+# @name CreateDisciplinaCompleta
+POST {{baseURL}}/disciplinas
+Content-Type: application/json
+
+{
+  "nome": "Programação Orientada a Objetos",
+  "codigo": "POO001",
+  "carga_horaria": 60,
+  "semestre": 4,
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186",
+  "data_inicio": "2024-08-01T00:00:00.000Z",
+  "data_fim_prevista": "2024-12-15T23:59:59.000Z",
+  "descricao": "Disciplina focada em conceitos de programação orientada a objetos"
+}
+
+###
+
+# @name UpdateDisciplina
+PUT {{baseURL}}/disciplinas/43357332-f437-4344-b8fc-3fcdeca85f81
+Content-Type: application/json
+
+{
+  "nome": "Algoritmos e Estruturas de Dados Avançados",
+  "codigo": "AED002",
+  "carga_horaria": 100,
+  "semestre": 4,
+  "data_fim_real": "2024-06-28T18:00:00.000Z"
+}
+
+###
+
+# @name DeleteDisciplina
+DELETE {{baseURL}}/disciplinas/43357332-f437-4344-b8fc-3fcdeca85f81
+Content-Type: application/json
+
+###
+
+# @name CreateDisciplinaBancoDados
+POST {{baseURL}}/disciplinas
+Content-Type: application/json
+
+{
+  "nome": "Banco de Dados",
+  "codigo": "BD001",
+  "carga_horaria": 80,
+  "semestre": 5,
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186",
+  "data_inicio": "2024-02-01T00:00:00.000Z",
+  "data_fim_prevista": "2024-06-30T23:59:59.000Z"
+}

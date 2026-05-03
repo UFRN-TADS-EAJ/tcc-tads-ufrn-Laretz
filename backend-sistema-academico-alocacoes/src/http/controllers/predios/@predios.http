@@ -1,0 +1,74 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Prédios
+
+# @name GetAllPredios
+GET {{baseURL}}/predios
+Content-Type: application/json
+
+###
+
+# @name GetPredioById
+GET {{baseURL}}/predios/22ae24e0-a461-4049-87c1-685d3a3ac749
+Content-Type: application/json
+
+###
+
+# @name CreatePredio
+POST {{baseURL}}/predios
+Content-Type: application/json
+
+{
+  "nome": "Prédio Central",
+  "codigo": "PC001",
+  "endereco": "Rua Principal, 123 - Centro"
+}
+
+###
+
+# @name CreatePredioCompleto
+POST {{baseURL}}/predios
+Content-Type: application/json
+
+{
+  "nome": "Prédio de Engenharia",
+  "codigo": "ENG001",
+  "endereco": "Avenida das Engenharias, 456 - Campus Universitário",
+  "descricao": "Prédio dedicado aos cursos de engenharia com laboratórios especializados"
+}
+
+###
+
+# @name UpdatePredio
+PUT {{baseURL}}/predios/22ae24e0-a461-4049-87c1-685d3a3ac749
+Content-Type: application/json
+
+{
+  "nome": "Prédio Central Renovado",
+  "codigo": "PC002",
+  "endereco": "Rua Principal, 123 - Centro - Renovado 2024"
+}
+
+###
+
+# @name DeletePredio
+DELETE {{baseURL}}/predios/22ae24e0-a461-4049-87c1-685d3a3ac749
+Content-Type: application/json
+
+###
+
+# @name GetSalasByPredio
+GET {{baseURL}}/predios/22ae24e0-a461-4049-87c1-685d3a3ac749/salas
+Content-Type: application/json
+
+###
+
+# @name CreatePredioLaboratorio
+POST {{baseURL}}/predios
+Content-Type: application/json
+
+{
+  "nome": "Prédio de Laboratórios",
+  "codigo": "LAB001",
+  "endereco": "Rua dos Laboratórios, 789 - Campus"
+}

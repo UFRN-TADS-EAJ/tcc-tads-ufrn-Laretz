@@ -1,0 +1,106 @@
+@baseURL = http://localhost:3333
+
+@idCurso = {{CreateCurso.response.body.id}}
+
+@idCursoCompleto = {{CreateCursoCompleto.response.body.id}}
+
+### Testes de API - Cursos
+
+# @name GetAllCursos
+# Busca todos os cursos cadastrados no sistema
+GET {{baseURL}}/cursos
+Content-Type: application/json
+
+###
+
+# @name GetCursoById
+# Busca um curso específico pelo ID
+GET {{baseURL}}/cursos/dc443b09-3d6c-4da3-8d0e-8987287c9186
+Content-Type: application/json
+
+###
+
+# @name CreateCurso
+# Cria um novo curso básico
+POST {{baseURL}}/cursos
+Content-Type: application/json
+
+{
+  "nome": "Engenharia de Software",
+  "codigo": "ES001",
+  "descricao": "Curso de Engenharia de Software com foco em desenvolvimento de sistemas",
+  "duracao_semestres": 8
+}
+
+###
+
+# @name CreateCursoCompleto
+# Cria um curso completo com todas as informações
+POST {{baseURL}}/cursos
+Content-Type: application/json
+
+{
+  "nome": "Ciência da Computação",
+  "codigo": "CC001",
+  "descricao": "Curso completo de Ciência da Computação com foco em algoritmos e estruturas de dados",
+  "duracao_semestres": 8,
+  "modalidade": "PRESENCIAL"
+}
+
+###
+
+# @name CreateCursoSistemasInformacao
+# Cria curso de Sistemas de Informação
+POST {{baseURL}}/cursos
+Content-Type: application/json
+
+{
+  "nome": "Sistemas de Informação",
+  "codigo": "SI001",
+  "descricao": "Curso de Sistemas de Informação voltado para gestão e análise de dados",
+  "duracao_semestres": 8,
+  "modalidade": "PRESENCIAL"
+}
+
+###
+
+# @name UpdateCurso
+# Atualiza informações de um curso existente
+PUT {{baseURL}}/cursos/{{idCurso}}
+Content-Type: application/json
+
+{
+  "nome": "Engenharia de Software Atualizada",
+  "codigo": "ES002",
+  "descricao": "Curso atualizado de Engenharia de Software com novas metodologias",
+  "duracao_semestres": 10
+}
+
+###
+
+# @name UpdateCursoCompleto
+# Atualiza curso usando ID fixo para teste
+PUT {{baseURL}}/cursos/dc443b09-3d6c-4da3-8d0e-8987287c9186
+Content-Type: application/json
+
+{
+  "nome": "Engenharia de Software - Renovado 2024",
+  "codigo": "ES003",
+  "descricao": "Curso renovado com as mais recentes práticas de engenharia de software",
+  "duracao_semestres": 9,
+  "modalidade": "HIBRIDO"
+}
+
+###
+
+# @name DeleteCurso
+# Remove um curso do sistema usando variável dinâmica
+DELETE {{baseURL}}/cursos/{{idCurso}}
+Content-Type: application/json
+
+###
+
+# @name DeleteCursoFixo
+# Remove curso usando ID fixo para teste
+DELETE {{baseURL}}/cursos/dc443b09-3d6c-4da3-8d0e-8987287c9186
+Content-Type: application/json

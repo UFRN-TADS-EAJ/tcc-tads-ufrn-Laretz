@@ -1,0 +1,71 @@
+name: 🧪 Run E2E Tests
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  run-e2e-tests:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pgpassword
+          POSTGRES_DB: postgresbd_test
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 🧩 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧱 Validate Prisma schema
+        run: npx prisma validate
+        env:
+          DATABASE_URL: "postgresql://postgres:pgpassword@localhost:5432/postgresbd_test"
+
+      - name: 🕒 Wait for Postgres to be ready
+        run: |
+          echo "⏳ Aguardando Postgres aceitar conexões..."
+          for i in {1..10}; do
+            nc -z localhost 5432 && echo "✅ Postgres está pronto!" && break
+            echo "Aguardando..."
+            sleep 3
+          done
+
+      - name: 🧩 Run Prisma migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: "postgresql://postgres:pgpassword@localhost:5432/postgresbd_test"
+
+      - name: 🌎 Set timezone to America/Sao_Paulo
+        run: sudo timedatectl set-timezone America/Sao_Paulo
+
+      - name: 🧪 Run E2E tests
+        run: npm run test:e2e
+        env:
+          JWT_SECRET: testing
+          DATABASE_URL: "postgresql://postgres:pgpassword@localhost:5432/postgresbd_test"

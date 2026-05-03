@@ -1,0 +1,40 @@
+@baseURL = http://localhost:3333
+@token = {{Login.response.body.token}}
+
+### Autenticar (obter token)
+# LOGIN :)
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "renatodebone1@email.com",
+  "senha": "123123"
+}
+
+### Criar feedback (usuário autenticado)
+POST {{baseURL}}/feedback
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "npsScore": 9,
+  "comment": "Interface está ótima, mas poderia ter atalhos para filtros.",
+  "page": "/usuarios",
+  "feature": "usuarios",
+  "metadata": {
+    "context": "tela-lista-usuarios",
+    "filtrosAtivos": ["curso=Engenharia"],
+    "device": "desktop"
+  }
+}
+
+### Listar feedbacks (ADMIN)
+# Filtros opcionais: page, feature, limit
+GET {{baseURL}}/feedback?page=/usuarios&feature=usuarios&limit=50
+Authorization: Bearer {{token}}
+
+### Métricas de feedback (ADMIN)
+# Filtros opcionais: page, feature
+GET {{baseURL}}/feedback/metrics?page=/usuarios&feature=usuarios
+Authorization: Bearer {{token}}

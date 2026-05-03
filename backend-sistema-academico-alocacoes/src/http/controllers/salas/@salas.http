@@ -1,0 +1,110 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Salas
+
+### INSTRUÇÕES DE USO:
+### 1. Execute primeiro a requisição "Login" para obter o token
+### 2. O token será automaticamente usado nas outras requisições através da variável {{Login.response.body.token}}
+### 3. Se o token expirar, execute o Login novamente
+
+### AUTENTICAÇÃO (Execute primeiro para obter o token)
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "test@admin.com",
+  "senha": "123456"
+}
+
+###
+
+# @name CriarSala
+POST {{baseURL}}/salas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Sala 101",
+  "numero": "101",
+  "predioId": "predio-uuid-aqui",
+  "capacidade": 40,
+  "tipo": "SALA_AULA",
+  "computadores": 0
+}
+
+###
+
+# @name CriarSalaLaboratorio
+POST {{baseURL}}/salas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Laboratório de Informática 1",
+  "numero": "LAB01",
+  "predioId": "predio-uuid-aqui",
+  "capacidade": 30,
+  "tipo": "LABORATORIO",
+  "computadores": 30
+}
+
+###
+
+# @name BuscarTodasSalas
+GET {{baseURL}}/salas
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarSalasPorPredio
+GET {{baseURL}}/salas?predioId=predio-uuid-aqui
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarSalaPorId
+GET {{baseURL}}/salas/sala-uuid-aqui
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name AtualizarSala
+PUT {{baseURL}}/salas/sala-uuid-aqui
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Sala 102 - Atualizada",
+  "capacidade": 45,
+  "computadores": 5
+}
+
+###
+
+# @name ExcluirSala
+DELETE {{baseURL}}/salas/sala-uuid-aqui
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarGradeHorariosSala
+GET {{baseURL}}/salas/sala-uuid-aqui/grade-horarios
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name CriarSalaAuditorio
+POST {{baseURL}}/salas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Auditório Principal",
+  "numero": "AUD01",
+  "predioId": "predio-uuid-aqui",
+  "capacidade": 200,
+  "tipo": "AUDITORIO",
+  "computadores": 1
+}

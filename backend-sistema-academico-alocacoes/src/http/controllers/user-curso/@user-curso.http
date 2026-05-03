@@ -1,0 +1,71 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - User-Curso
+
+### INSTRUÇÕES DE USO:
+### 1. Execute primeiro a requisição "Login" para obter o token
+### 2. O token será automaticamente usado nas outras requisições através da variável {{Login.response.body.token}}
+### 3. Se o token expirar, execute o Login novamente
+
+### AUTENTICAÇÃO (Execute primeiro para obter o token)
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "test@admin.com",
+  "senha": "123456"
+}
+
+###
+
+# @name VincularUserCurso
+POST {{baseURL}}/user-curso/vincular
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "id_user": "e877598e-43f9-4f39-b5d4-1c1a8e5219bc",
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186"
+}
+
+###
+
+# @name DesvincularUserCurso
+DELETE {{baseURL}}/user-curso/desvincular
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "id_user": "e877598e-43f9-4f39-b5d4-1c1a8e5219bc",
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186"
+}
+
+###
+
+# @name BuscarCursosUsuario
+GET {{baseURL}}/user-curso/cursos/e877598e-43f9-4f39-b5d4-1c1a8e5219bc
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarCursosUsuarioComPaginacao
+GET {{baseURL}}/user-curso/cursos/e877598e-43f9-4f39-b5d4-1c1a8e5219bc?page=1&limit=10
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarUsuariosCurso
+GET {{baseURL}}/user-curso/usuarios/dc443b09-3d6c-4da3-8d0e-8987287c9186
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarUsuariosCursoComPaginacao
+GET {{baseURL}}/user-curso/usuarios/dc443b09-3d6c-4da3-8d0e-8987287c9186?page=1&limit=10
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}

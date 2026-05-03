@@ -1,0 +1,109 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Horários
+
+### INSTRUÇÕES DE USO:
+### 1. Execute primeiro a requisição "Login" para obter o token
+### 2. O token será automaticamente usado nas outras requisições através da variável {{Login.response.body.token}}
+### 3. Se o token expirar, execute o Login novamente
+
+### AUTENTICAÇÃO (Execute primeiro para obter o token)
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "test@admin.com",
+  "senha": "123456"
+}
+
+###
+
+# @name CriarHorario
+POST {{baseURL}}/horarios
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "dia_semana": "SEGUNDA",
+  "horario_inicio": "07:30:00",
+  "horario_fim": "08:20:00"
+}
+
+###
+
+# @name CriarHorarioCodigo
+POST {{baseURL}}/horarios/codigo
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "codigo": "M1"
+}
+
+###
+
+# @name BuscarTodosHorarios
+GET {{baseURL}}/horarios
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarHorarioPorId
+GET {{baseURL}}/horarios/horario-uuid-aqui
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name AtualizarHorario
+PUT {{baseURL}}/horarios/horario-uuid-aqui
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "dia_semana": "TERCA",
+  "horario_inicio": "08:30:00",
+  "horario_fim": "09:20:00"
+}
+
+###
+
+# @name ExcluirHorario
+DELETE {{baseURL}}/horarios/horario-uuid-aqui
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name CriarHorarioCompleto
+POST {{baseURL}}/horarios
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "dia_semana": "QUARTA",
+  "horario_inicio": "13:30:00",
+  "horario_fim": "14:20:00"
+}
+
+###
+
+# @name CriarHorarioTarde
+POST {{baseURL}}/horarios/codigo
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "codigo": "T1"
+}
+
+###
+
+# @name CriarHorarioNoite
+POST {{baseURL}}/horarios/codigo
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "codigo": "N1"
+}

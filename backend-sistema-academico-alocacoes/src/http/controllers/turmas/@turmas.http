@@ -1,0 +1,106 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Turmas
+
+### INSTRUÇÕES DE USO:
+### 1. Execute primeiro a requisição "Login" para obter o token
+### 2. O token será automaticamente usado nas outras requisições através da variável {{Login.response.body.token}}
+### 3. Se o token expirar, execute o Login novamente
+
+### AUTENTICAÇÃO (Execute primeiro para obter o token)
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "admin@admin.com",
+  "senha": "123456"
+}
+
+###
+
+# @name GetAllTurmas
+GET {{baseURL}}/turmas/todas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name GetTurmaById
+GET {{baseURL}}/turmas/4339c652-1394-415c-a653-0a90a96fa6dd
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name GetGradeHorariosTurma
+GET {{baseURL}}/turmas/e4368e04-acc2-4d2c-836a-c96a2dbb51b1/grade-horarios
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name CreateTurma
+POST {{baseURL}}/turmas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Turma A - Engenharia Software",
+  "num_alunos": 30,
+  "periodo": 1,
+  "turno": "MATUTINO",
+  "id_curso": "e877598e-43f9-4f39-b5d4-1c1a8e5219bc"
+}
+
+###
+
+# @name CreateTurmaVespertino
+POST {{baseURL}}/turmas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Turma B - Ciência Computação",
+  "num_alunos": 25,
+  "periodo": 3,
+  "turno": "VESPERTINO",
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186"
+}
+
+###
+
+# @name CreateTurmaNoturno
+POST {{baseURL}}/turmas
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Turma C - Sistemas Informação",
+  "num_alunos": 20,
+  "periodo": 5,
+  "turno": "NOTURNO",
+  "id_curso": "dc443b09-3d6c-4da3-8d0e-8987287c9186"
+}
+
+###
+
+# @name UpdateTurma
+PUT {{baseURL}}/turmas/e4368e04-acc2-4d2c-836a-c96a2dbb51b1
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "nome": "Turma A - Engenharia Software Atualizada",
+  "num_alunos": 35,
+  "periodo": 2,
+  "turno": "VESPERTINO"
+}
+
+###
+
+# @name DeleteTurma
+DELETE {{baseURL}}/turmas/e4368e04-acc2-4d2c-836a-c96a2dbb51b1
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}

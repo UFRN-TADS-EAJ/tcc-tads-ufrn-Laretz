@@ -1,0 +1,177 @@
+@baseURL = http://localhost:3333
+@authToken = {{login.response.body.token}}
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "renatodebone1@email.com",
+  "senha": "123123"
+}
+
+### 1. Criar nova alocação (horário único)
+POST {{baseURL}}/alocacoes
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "id_user": "550e8400-e29b-41d4-a716-446655440001",
+  "id_curso_disciplina": "550e8400-e29b-41d4-a716-446655440202",
+  "id_turma": "550e8400-e29b-41d4-a716-446655440003",
+  "id_sala": "550e8400-e29b-41d4-a716-446655440004",
+  "id_horario": "550e8400-e29b-41d4-a716-446655440005"
+}
+
+### 2. Criar nova alocação (múltiplos horários)
+POST {{baseURL}}/alocacoes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "id_user": "550e8400-e29b-41d4-a716-446655440001",
+  "id_curso_disciplina": "550e8400-e29b-41d4-a716-446655440202",
+  "id_turma": "550e8400-e29b-41d4-a716-446655440003",
+  "id_sala": "550e8400-e29b-41d4-a716-446655440004",
+  "id_horarios": [
+    "550e8400-e29b-41d4-a716-446655440005",
+    "550e8400-e29b-41d4-a716-446655440006"
+  ]
+}
+
+### 3. Listar todas as alocações
+GET {{baseURL}}/alocacoes
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+### 4. Listar alocações com paginação
+GET {{baseURL}}/alocacoes?page=1
+Authorization: Bearer {{Login.response.body.token}}
+
+### 5. Buscar alocação por ID
+GET {{baseURL}}/alocacoes/4ab5d3d4-f476-4ef9-b2a5-1a1e538dfc1b
+Authorization: Bearer {{Login.response.body.token}}
+
+### 6. Buscar alocações por professor
+GET {{baseURL}}/alocacoes/professor/71a03754-a644-46e8-9b17-c7440ec4b575
+Authorization: Bearer {{Login.response.body.token}}
+
+### 7. Buscar alocações por professor com paginação
+GET {{baseURL}}/alocacoes/professor/{{professorId}}?page=1
+Authorization: Bearer {{authToken}}
+
+### 8. Buscar alocações por turma e período
+GET {{baseURL}}/alocacoes/turma/{{turmaId}}/periodo?periodo=MANHA
+Authorization: Bearer {{authToken}}
+
+### 9. Buscar alocações por turma e período com paginação
+GET {{baseURL}}/alocacoes/turma/{{turmaId}}/periodo?periodo=TARDE&page=1
+Authorization: Bearer {{authToken}}
+
+### 10. Buscar alocações do período da manhã
+GET {{baseURL}}/alocacoes/periodo/manha
+Authorization: Bearer {{authToken}}
+
+### 11. Buscar alocações do período da manhã com paginação
+GET {{baseURL}}/alocacoes/periodo/manha?page=1
+Authorization: Bearer {{authToken}}
+
+### 12. Buscar grade de horários geral
+GET {{baseURL}}/alocacoes/grade-horarios
+Authorization: Bearer {{authToken}}
+
+### 13. Buscar grade de horários por turma
+GET {{baseURL}}/alocacoes/grade-horarios?id_turma={{turmaId}}
+Authorization: Bearer {{authToken}}
+
+### 14. Buscar grade de horários por professor
+GET {{baseURL}}/alocacoes/grade-horarios?id_user={{professorId}}
+Authorization: Bearer {{authToken}}
+
+### 15. Buscar grade de horários por sala
+GET {{baseURL}}/alocacoes/grade-horarios?id_sala={{salaId}}
+Authorization: Bearer {{authToken}}
+
+### 16. Buscar grade de horários específica
+GET {{baseURL}}/alocacoes/grade-horarios-geral
+Authorization: Bearer {{authToken}}
+
+### 17. Atualizar alocação
+PUT {{baseURL}}/alocacoes/{{alocacaoId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "id_user": "71a03754-a644-46e8-9b17-c7440ec4b575",
+  "id_curso_disciplina": "550e8400-e29b-41d4-a716-446655440208",
+  "id_turma": "550e8400-e29b-41d4-a716-446655440009",
+  "id_sala": "550e8400-e29b-41d4-a716-446655440010",
+  "id_horario": "550e8400-e29b-41d4-a716-446655440011"
+}
+
+### 18. Excluir alocação
+DELETE {{baseURL}}/alocacoes/{{alocacaoId}}
+Authorization: Bearer {{authToken}}
+
+### 19. Excluir todas as alocações de uma turma
+DELETE {{baseURL}}/alocacoes/turma/{{turmaId}}/todas
+Authorization: Bearer {{authToken}}
+
+### ===== CENÁRIOS DE TESTE =====
+
+### 20. Teste - Criar alocação sem autorização
+POST {{baseURL}}/alocacoes
+Content-Type: application/json
+
+{
+  "id_user": "550e8400-e29b-41d4-a716-446655440001",
+  "id_curso_disciplina": "550e8400-e29b-41d4-a716-446655440002",
+  "id_turma": "550e8400-e29b-41d4-a716-446655440003",
+  "id_sala": "550e8400-e29b-41d4-a716-446655440004",
+  "id_horario": "550e8400-e29b-41d4-a716-446655440005"
+}
+
+### 21. Teste - Criar alocação com dados inválidos
+POST {{baseURL}}/alocacoes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "id_user": "id_invalido",
+  "id_curso_disciplina": "",
+  "id_turma": null
+}
+
+### 22. Teste - Buscar alocação inexistente
+GET {{baseURL}}/alocacoes/550e8400-e29b-41d4-a716-446655440999
+Authorization: Bearer {{authToken}}
+
+### 23. Teste - Atualizar alocação inexistente
+PUT {{baseURL}}/alocacoes/550e8400-e29b-41d4-a716-446655440999
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "id_user": "550e8400-e29b-41d4-a716-446655440001"
+}
+
+### 24. Teste - Excluir alocação inexistente
+DELETE {{baseURL}}/alocacoes/550e8400-e29b-41d4-a716-446655440999
+Authorization: Bearer {{authToken}}
+
+### ===== VARIÁVEIS PARA TESTES =====
+# Substitua pelos IDs reais após criar os recursos
+@alocacaoId = 550e8400-e29b-41d4-a716-446655440000
+@professorId = 550e8400-e29b-41d4-a716-446655440001
+@turmaId = 550e8400-e29b-41d4-a716-446655440003
+@salaId = 550e8400-e29b-41d4-a716-446655440004
+
+### ===== LOGIN PARA OBTER TOKEN =====
+# @name login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "admin@email.com",
+  "senha": "123456"
+}

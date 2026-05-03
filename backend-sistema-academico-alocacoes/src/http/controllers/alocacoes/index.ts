@@ -1,0 +1,12 @@
+export { criarAlocacao } from './criar-alocacao';
+export { buscarAlocacoes } from './buscar-alocacoes';
+export { buscarAlocacao } from './buscar-alocacao';
+export { atualizarAlocacao } from './atualizar-alocacao';
+export { excluirAlocacao } from './excluir-alocacao';
+export { buscarGradeHorarios as buscarGradeHorariosGeral } from './buscar-grade-horarios-geral';
+export { buscarGradeHorarios } from './buscar-grade-horarios';
+export { buscarAlocacoesTurnoManha } from './buscar-alocacoes-turno-manha';
+export { buscarAlocacoesTurmaTurno } from './buscar-alocacoes-turma-turno';
+export { excluirTodasAlocacoesTurma } from './excluir-todas-alocacoes-turma';
+export { buscarAlocacoesProfessor } from './buscar-alocacoes-professor';
+export { buscarQuantidadeAulasPorProfessor } from './buscar-quantidade-aulas-professores';

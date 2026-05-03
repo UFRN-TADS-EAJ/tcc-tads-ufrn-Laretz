@@ -1,0 +1,67 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Salas
+
+### INSTRUÇÕES DE USO:
+### 1. Execute primeiro a requisição "Login" para obter o token
+### 2. O token será automaticamente usado nas outras requisições através da variável {{Login.response.body.token}}
+### 3. Se o token expirar, execute o Login novamente
+
+### AUTENTICAÇÃO (Execute primeiro para obter o token)
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "renatodebone1@email.com",
+  "senha": "123123"
+}
+
+###
+
+### Criar reserva simples (sem recorrência)
+POST {{baseURL}}/reservas-sala
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "salaId": "d42b7327-ae5e-4754-8fee-98cfee560919",
+  "horarioId": "a20fb6de-069b-4de0-9927-028afbffaffc",
+  "date": "2025-11-18",
+  "titulo": "Reunião do Projeto X",
+  "descricao": "Alinhamento semanal com equipe"
+}
+
+### Criar reserva recorrente semanal
+POST {{baseURL}}/reservas-sala
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "salaId": "d42b7327-ae5e-4754-8fee-98cfee560919",
+  "horarioId": "27abf023-3f48-4e61-ba88-655ccf089cc2",
+  "date": "2025-11-18",
+  "titulo": "Sprint Review",
+  "descricao": "Apresentação das entregas",
+  "recurrenceRule": "WEEKLY",
+  "recurrenceEnd": "2025-12-19"
+}
+
+### Listar reservas por sala e intervalo de datas
+GET {{baseURL}}/reservas-sala?salaId=a4985dfe-3f9e-4bd2-a8c1-3fad89d5d180&dateFrom=2025-11-01&dateTo=2025-11-30
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+### Cancelar uma reserva específica
+DELETE {{baseURL}}/reservas-sala/24d45bde-5eaa-48d3-8969-f20e84011af1
+Authorization: Bearer {{Login.response.body.token}}
+
+### Cancelar uma série de reservas (recorrência)
+DELETE {{baseURL}}/reservas-sala/series/dc428774-437f-4fcb-b614-bfba8d59462a
+Authorization: Bearer {{Login.response.body.token}}
+
+### Buscar grade de horários por sala (para verificar conflitos de alocação)
+GET {{baseURL}}/salas/a4985dfe-3f9e-4bd2-a8c1-3fad89d5d180/grade-horarios
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}

@@ -1,0 +1,72 @@
+@baseURL = http://localhost:3333
+
+### Testes de API - Professor-Disciplina
+
+# @name Login
+POST {{baseURL}}/session
+Content-Type: application/json
+
+{
+  "email": "test@admin.com",
+  "senha": "123456"
+}
+
+###
+
+# @name VincularProfessorDisciplina
+POST {{baseURL}}/professor-disciplina/vincular
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "id_user": "professor-uuid-aqui",
+  "id_disciplina": "disciplina-uuid-aqui"
+}
+
+###
+
+# @name DesvincularProfessorDisciplina
+POST {{baseURL}}/professor-disciplina/desvincular
+Content-Type: application/json
+Authorization: Bearer {{Login.response.body.token}}
+
+{
+  "id_user": "professor-uuid-aqui",
+  "id_disciplina": "disciplina-uuid-aqui"
+}
+
+###
+
+# @name BuscarDisciplinasProfessor
+GET {{baseURL}}/professores/professor-uuid-aqui/disciplinas
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarDisciplinasProfessorPaginacao
+GET {{baseURL}}/professores/professor-uuid-aqui/disciplinas?page=1&limit=10
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarDisciplinasProfessorBusca
+GET {{baseURL}}/professores/professor-uuid-aqui/disciplinas?search=matematica
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarProfessoresDisciplina
+GET {{baseURL}}/disciplinas/disciplina-uuid-aqui/professores
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarProfessoresDisciplinaPaginacao
+GET {{baseURL}}/disciplinas/disciplina-uuid-aqui/professores?page=1&limit=10
+Authorization: Bearer {{Login.response.body.token}}
+
+###
+
+# @name BuscarProfessoresDisciplinaBusca
+GET {{baseURL}}/disciplinas/disciplina-uuid-aqui/professores?search=joao
+Authorization: Bearer {{Login.response.body.token}}

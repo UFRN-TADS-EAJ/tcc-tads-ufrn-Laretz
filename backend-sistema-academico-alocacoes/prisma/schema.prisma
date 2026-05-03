@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Predio {
+  id         String   @id @default(uuid())
+  codigo     String   @unique
+  nome       String
+  descricao  String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  salas      Sala[]
+}
+
+model Curso {
+  id                 String            @id @default(uuid())
+  codigo             String            @unique
+  nome               String
+  turno              TurnoCurso
+  duracao_semestres  Int
+  ativo              Boolean           @default(true)
+  isDeleted          DateTime?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
+  disciplinas        Disciplina[]
+  turmas             Turma[]
+  users              UserCurso[]
+  cursos_disciplinas CursoDisciplina[]
+}
+
+model PeriodoLetivo {
+  id          String     @id @default(uuid())
+  nome        String     @unique
+  data_inicio DateTime
+  data_fim    DateTime
+  ativo       Boolean    @default(true)
+  status      PeriodoStatus @default(ATIVO)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  alocacoes   Alocacao[]
+  reservas    ReservaSala[]
+}
+
+enum PeriodoStatus {
+  ATIVO
+  ENCERRADO
+  FUTURO
+}
+
+model User {
+  id                String                @id @default(uuid())
+  nome              String
+  email             String                @unique
+  senha             String
+  role              Role                  @default(PROFESSOR)
+  especializacao    String?
+  carga_horaria_max Int?
+  preferencia       String?
+  alocacoes         Alocacao[]
+  disciplinas       ProfessorDisciplina[]
+  cursos            UserCurso[]
+  feedbacks         Feedback[]
+  notificacoes      Notificacao[]
+  reservasSala      ReservaSala[]
+}
+
+model Disciplina {
+  id                  String                @id @default(uuid())
+  nome                String
+  carga_horaria       Int                   @default(60)
+  carga_horaria_atual Float                 @default(0)
+  total_aulas         Int                   @default(0)
+  aulas_ministradas   Int                   @default(0)
+  tipo_de_sala        TipoDeSala            @default(Sala)
+  data_inicio         DateTime?
+  data_fim_prevista   DateTime?
+  data_fim_real       DateTime?
+  periodo_letivo      String?
+  horario_consolidado String?
+  codigo              String?
+  id_curso            String
+  semestre            Int                   @default(1)
+  obrigatoria         Boolean               @default(true)
+  alocacoes           Alocacao[]
+  curso               Curso                 @relation(fields: [id_curso], references: [id])
+  professores         ProfessorDisciplina[]
+  cursos_vinculos     CursoDisciplina[]
+}
+
+model Turma {
+  id         String     @id @default(uuid())
+  nome       String
+  num_alunos Int
+  turno      String
+  id_curso   String
+  semestre   Int        @default(1)
+  ativa      Boolean    @default(true)
+  alocacoes  Alocacao[]
+  curso      Curso      @relation(fields: [id_curso], references: [id])
+}
+
+model Sala {
+  id           String             @id @default(uuid())
+  nome         String
+  numero       String?
+  capacidade   Int
+  tipo         String
+  computadores Int                @default(0)
+  predioId     String?
+  ativa        Boolean            @default(true)
+  alocacoes    Alocacao[]
+  reservas     ReservaSala[]
+  predio       Predio?            @relation(fields: [predioId], references: [id])
+}
+
+model Horario {
+  id             String             @id @default(uuid())
+  codigo         String
+  dia_semana     String
+  horario_inicio DateTime           @map("horarioInicio") @db.Time(6)
+  horario_fim    DateTime           @map("horarioFim") @db.Time(6)
+  regime         RegimeHorario      @default(SUPERIOR)
+  alocacoes      Alocacao[]
+  reservas       ReservaSala[]
+}
+
+model Alocacao {
+  id                  String          @id @default(uuid())
+  id_user             String
+  id_disciplina       String
+  id_turma            String
+  id_sala             String
+  id_horario          String
+  id_curso_disciplina String
+  periodoId           String
+  is_modulo_principal Boolean         @default(true)
+  created_at          DateTime        @default(now())
+  disciplina          Disciplina      @relation(fields: [id_disciplina], references: [id])
+  cursoDisciplina     CursoDisciplina @relation(fields: [id_curso_disciplina], references: [id])
+  horario             Horario         @relation(fields: [id_horario], references: [id])
+  sala                Sala            @relation(fields: [id_sala], references: [id])
+  turma               Turma           @relation(fields: [id_turma], references: [id])
+  user                User            @relation(fields: [id_user], references: [id])
+  periodo             PeriodoLetivo   @relation(fields: [periodoId], references: [id])
+
+  @@unique([id_user, id_horario, periodoId], name: "uniq_alocacao_user_horario_periodo")
+  @@unique([id_sala, id_horario, periodoId], name: "uniq_alocacao_sala_horario_periodo")
+  @@unique([id_turma, id_horario, periodoId], name: "uniq_alocacao_turma_horario_periodo")
+}
+
+enum ReservaStatus {
+  ATIVA
+  CANCELADA
+}
+
+model ReservaSala {
+  id           String         @id @default(uuid())
+  salaId       String
+  horarioId    String
+  date         DateTime
+  titulo       String
+  descricao    String?
+  criado_por   String
+  status       ReservaStatus  @default(ATIVA)
+  recurrenceRule String?
+  recurrenceEnd DateTime?
+  seriesId     String?
+  periodoId    String
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+
+  sala      Sala    @relation(fields: [salaId], references: [id])
+  horario   Horario @relation(fields: [horarioId], references: [id])
+  criadoPor User    @relation(fields: [criado_por], references: [id])
+  periodo   PeriodoLetivo @relation(fields: [periodoId], references: [id])
+
+  @@unique([salaId, horarioId, date, periodoId], name: "uniq_reserva_sala_horario_date_periodo")
+}
+
+model ProfessorDisciplina {
+  id            String     @id @default(uuid())
+  id_user       String
+  id_disciplina String
+  ativo         Boolean    @default(true)
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  disciplina    Disciplina @relation(fields: [id_disciplina], references: [id])
+  user          User       @relation(fields: [id_user], references: [id])
+
+  @@unique([id_user, id_disciplina])
+}
+
+model UserCurso {
+  id         String   @id @default(uuid())
+  id_user    String
+  id_curso   String
+  ativo      Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  curso      Curso    @relation(fields: [id_curso], references: [id])
+  user       User     @relation(fields: [id_user], references: [id])
+
+  @@unique([id_user, id_curso])
+}
+
+enum Role {
+  PROFESSOR
+  ADMIN
+  COORDENADOR
+}
+
+enum TipoDeSala {
+  Lab
+  Sala
+}
+
+enum TurnoCurso {
+  MATUTINO
+  VESPERTINO
+  NOTURNO
+  INTEGRAL
+}
+
+enum RegimeHorario {
+  SUPERIOR
+  TECNICO
+}
+
+model Feedback {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  npsScore   Int
+  comment    String
+  page       String?
+  feature    String?
+  metadata   Json?
+  created_at DateTime @default(now())
+}
+
+model CursoDisciplina {
+  id            String   @id @default(uuid())
+  id_curso      String
+  id_disciplina String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  curso      Curso      @relation(fields: [id_curso], references: [id])
+  disciplina Disciplina @relation(fields: [id_disciplina], references: [id])
+  alocacoes  Alocacao[]
+
+  @@unique([id_curso, id_disciplina])
+}
+
+enum NotificacaoStatus {
+  PENDENTE
+  LIDA
+  RESPONDIDA
+}
+
+enum NotificacaoType {
+  SOLICITACAO_TROCA_SALA
+  GENERICA
+}
+
+model Notificacao {
+  id           String            @id @default(uuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         NotificacaoType
+  title        String
+  message      String
+  status       NotificacaoStatus @default(PENDENTE)
+  replyMessage String?
+  metadata     Json?
+  created_at   DateTime          @default(now())
+  read_at      DateTime?
+  responded_at DateTime?
+}
