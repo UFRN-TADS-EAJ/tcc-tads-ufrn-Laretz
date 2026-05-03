@@ -1,4 +1,4 @@
-# Título do Projeto de pesquisa ou TCC
+# Projeto de Alocação Acadêmica
 
 Repositório técnico do projeto de pesquisa desenvolvido no curso de **Análise e Desenvolvimento de Sistemas**.
 
@@ -7,13 +7,9 @@ Repositório técnico do Trabalho de Conclusão de Curso (TCC) do curso de **An�
 Este repositório deve conter exclusivamente artefatos técnicos do projeto:
 
 * código-fonte
-* notebooks (quando aplicável)
 * scripts de execução
-* modelos treinados (quando aplicável)
 * documentação técnica mínima
 * instruções de instalação e execução
-
-O texto monográfico do TCC não precisa ser incluído neste repositório, no entanto, é interessante incluir um link para o respositório institucional da UFRN.
 
 ---
 
@@ -154,43 +150,27 @@ Acesse: `http://localhost:3000`
 ---
 
 
-Criar ambiente virtual:
+# Scritps do projeto: 
 
 ```
-python -m venv venv
-```
+npm run setup:horarios -> popula o banco com a tabela de horarios da ufrn
+npm run seed  -> popula o banco com alguns dados para testar o sistema
+npm run test:e2e  -> roda todos os testes e2e
+npm run test:unit -> roda todos os testes unitarios
 
-Ativar ambiente:
-
-Linux/macOS:
-
-```
-source venv/bin/activate
-```
-
-Windows:
-
-```
-venv\Scripts\activate
 ```
 
 Instalar dependências:
 
 ```
-pip install -r requirements.txt
+npm i
 ```
 
 ---
 
 # Execução do Projeto
 
-Executar treinamento (quando aplicável):
-
-```
-python train.py
-```
-
-Executar aplicação (quando aplicável):
+Executar aplicação:
 
 ```
 ### Desenvolvimento
@@ -198,66 +178,23 @@ Executar aplicação (quando aplicável):
 - Front-end: `cd front-end && npm run dev`
 ```
 
-ou
-
-```
-uvicorn main:app
-```
-
----
-
-# Dataset (quando aplicável)
-
-Informar:
-
-* nome
-* origem
-* link
-* instruções de download
-
-Caso não esteja no repositório, descrever como obter.
-
----
-
 # Deploy
 
 ## Execução local
 - Subir banco + backend + front conforme instruções de “Instalação” e “Execução”.
 
+## Execução com Docker
 
 ```
-streamlit run app.py
+docker compose up -d
 ```
-
-ou
-
-```
-python main.py
-```
-
-## Execução com Docker (quando aplicável)
-
-```
-docker build -t nome-projeto .
-docker run -p 8000:8000 nome-projeto
-```
-
-## Execução em servidor (quando aplicável)
-
-Descrever:
-
-* plataforma utilizada
-* etapas principais de implantação
-* dependências necessárias
-
----
 
 # Reprodutibilidade
 
 Para reproduzir o ambiente:
 
 ```
-git clone <url-do-repositorio>
+git clone https://github.com/UFRN-TADS-EAJ/tcc-tads-ufrn-Laretz.git
 cd 1tcc
 cd backend
 npm install
