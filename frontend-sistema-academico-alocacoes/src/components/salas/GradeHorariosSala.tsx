@@ -155,18 +155,9 @@ export function GradeHorariosSala({
     setError(null);
 
     try {
-      const periodoId = (() => {
-        if (typeof window === "undefined") return undefined;
-        const modo = window.localStorage.getItem("periodo.modo");
-        if (modo !== "consulta") return undefined;
-        return window.localStorage.getItem("periodo.consultaId") || undefined;
-      })();
-
       const resp = await api.get<GradeHorariosSalaResponseVM>(
         `/salas/${sala.id}/grade-horarios`,
-        {
-          params: periodoId ? { periodoId } : undefined,
-        },
+
       );
       setGradeData(resp.data);
     } catch (err) {

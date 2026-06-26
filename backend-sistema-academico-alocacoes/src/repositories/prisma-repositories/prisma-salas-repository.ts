@@ -3,6 +3,18 @@ import { prisma } from "../../lib/prisma";
 import { SalasRepository } from "../salas-repository";
 
 export class PrismaSalasRepository implements SalasRepository {
+
+    private sortSalas<T extends { nome: string; predio?: { nome?: string | null } | null }>(salas: T[]) {
+        return salas.sort((a, b) => {
+            const predioA = a.predio?.nome ?? "";
+            const predioB = b.predio?.nome ?? "";
+            const byPredio = predioA.localeCompare(predioB, "pt-BR", { sensitivity: "base" });
+            if (byPredio !== 0) return byPredio;
+
+            return a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" });
+        });
+    }
+
     async create(data: Prisma.SalaCreateInput) {
         const sala = await prisma.sala.create({
             data,
@@ -35,14 +47,18 @@ export class PrismaSalasRepository implements SalasRepository {
             skip: (page - 1) * 20,
             include: {
                 predio: true
-            }
+              },
+            orderBy: [
+                { predio: { nome: "asc" } },
+                { nome: "asc" },
+            ],
         });
 
         if (!salas) {
             return [];
         }
 
-        return salas;
+        return this.sortSalas(salas);
     }
 
     async findByPredioId(predioId: string) {
@@ -50,10 +66,13 @@ export class PrismaSalasRepository implements SalasRepository {
             where: { predioId },
             include: {
                 predio: true
-            }
+            },
+            orderBy: {
+                nome: "asc",
+            },
         });
 
-        return salas;
+        return this.sortSalas(salas);
     }
 
     async update(id: string, data: Prisma.SalaUpdateInput) {

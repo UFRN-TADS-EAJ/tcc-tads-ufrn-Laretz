@@ -11,6 +11,7 @@ interface AlocacaoPreviewProps {
   disciplinaSelecionada?: { id: string; nome: string; codigo?: string };
   professorSelecionado?: { nome: string };
   title?: string;
+  occupiedCellLabel?: "disciplina" | "turma";
 }
 
 export const AlocacaoPreview: React.FC<AlocacaoPreviewProps> = ({
@@ -20,6 +21,7 @@ export const AlocacaoPreview: React.FC<AlocacaoPreviewProps> = ({
   disciplinaSelecionada,
   professorSelecionado,
   title = "Pré-visualização da Grade",
+  occupiedCellLabel = "disciplina",
 }) => {
   // Agrupar horários por período (Manhã, Tarde, Noite) para linhas
   // e Dias para colunas
@@ -42,6 +44,14 @@ export const AlocacaoPreview: React.FC<AlocacaoPreviewProps> = ({
     "N3",
     "N4",
   ];
+
+  const getOccupiedPrimaryLabel = (cell: GradeHorario[string][string][number]) => {
+    if (occupiedCellLabel === "turma") {
+      return cell.turma?.nome || cell.disciplina?.codigo || cell.disciplina?.nome?.substring(0, 6);
+    }
+
+    return cell.disciplina?.codigo || cell.disciplina?.nome?.substring(0, 6);
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -115,11 +125,10 @@ export const AlocacaoPreview: React.FC<AlocacaoPreviewProps> = ({
                       ) : cell ? (
                         <div
                           className="truncate w-full"
-                          title={`${cell.disciplina?.nome} - ${cell.user?.nome || ""}`}
+                          title={`${cell.turma?.nome || cell.disciplina?.nome || ""} - ${cell.user?.nome || ""}`}
                         >
                           <span className="block font-medium truncate">
-                            {cell.disciplina?.codigo ||
-                              cell.disciplina?.nome?.substring(0, 6)}
+                            {getOccupiedPrimaryLabel(cell)}
                           </span>
                           <span className="block text-muted-foreground truncate">
                             {

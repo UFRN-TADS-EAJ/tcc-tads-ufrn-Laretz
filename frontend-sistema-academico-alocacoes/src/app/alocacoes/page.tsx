@@ -176,18 +176,10 @@ export default function AlocacoesPage() {
       setConflictingHorarios(new Map());
 
       try {
-        const periodoIdFromStorage = (() => {
-          if (typeof window === "undefined") return undefined;
-          const modo = window.localStorage.getItem("periodo.modo");
-          if (modo !== "consulta") return undefined;
-          return window.localStorage.getItem("periodo.consultaId") || undefined;
-        })();
-
         const result = await alocacaoService.getHorarioConflicts({
           id_user: professorId || undefined,
           id_sala: salaId || undefined,
           id_turma: turmaId || undefined,
-          periodoId: periodoIdFromStorage,
           regime,
         });
         const conflicts = new Map(Object.entries(result.conflitos || {}));

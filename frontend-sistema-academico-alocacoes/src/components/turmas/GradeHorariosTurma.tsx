@@ -111,18 +111,8 @@ export function GradeHorariosTurma({ turma, trigger }: GradeHorariosTurmaProps) 
       setLoading(true);
       setError(null);
 
-      const periodoId = (() => {
-        if (typeof window === "undefined") return undefined;
-        const modo = window.localStorage.getItem("periodo.modo");
-        if (modo !== "consulta") return undefined;
-        return window.localStorage.getItem("periodo.consultaId") || undefined;
-      })();
-
       const resp = await api.get<GradeHorariosTurmaResponseVM>(
         `/turmas/${turma.id}/grade-horarios`,
-        {
-          params: periodoId ? { periodoId } : undefined,
-        },
       );
       setGradeData(resp.data);
     } catch (err) {
@@ -362,7 +352,10 @@ export function GradeHorariosTurma({ turma, trigger }: GradeHorariosTurmaProps) 
                           return unique;
                         }, [] as GradeHorariosTurmaAlocacaoInfoVM[])
                         .map((alocacao, index) => {
+                          
                           let horarioConsolidado = alocacao.disciplina.horario_consolidado || "";
+                          const vagas = alocacao.sala.capacidade;
+                          const demanda = turma.num_alunos;
 
                           if (!horarioConsolidado) {
                             const horariosPorDia: { [dia: string]: string[] } = {};
@@ -448,14 +441,14 @@ export function GradeHorariosTurma({ turma, trigger }: GradeHorariosTurmaProps) 
                                 {alocacao.sala.predio.nome} {alocacao.sala.nome}
                               </td>
                               <td className="px-3 py-2 text-sm text-foreground border-r border-border">
-                                {turma.num_alunos}
+                                {vagas}
                               </td>
                               <td className="px-3 py-2 text-sm text-foreground border-r border-border">
-                                {turma.num_alunos}
+                                {demanda}
                               </td>
                               <td className="px-3 py-2">
-                                <Badge className={getStatusColor(turma.num_alunos, turma.num_alunos)}>
-                                  {getStatusText(turma.num_alunos, turma.num_alunos)}
+                                <Badge className={getStatusColor(vagas, demanda)}>
+                                  {getStatusText(vagas, demanda)}
                                 </Badge>
                               </td>
                             </tr>

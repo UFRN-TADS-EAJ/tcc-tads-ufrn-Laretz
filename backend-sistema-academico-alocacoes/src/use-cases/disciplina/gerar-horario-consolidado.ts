@@ -12,6 +12,12 @@ interface GerarHorarioConsolidadoUseCaseResponse {
 export class GerarHorarioConsolidadoUseCase {
   constructor(private alocacoesRepository: AlocacoesRepository) {}
 
+  private readonly turnoOrder: Record<string, number> = {
+    M: 0,
+    T: 1,
+    N: 2,
+  };
+
   async execute({
     disciplinaId,
     periodoId,
@@ -25,7 +31,7 @@ export class GerarHorarioConsolidadoUseCase {
       return { horarioConsolidado: '' };
     }
 
-    // Mapear dias da semana para números
+
     const diasMap: { [key: string]: string } = {
        'SEGUNDA': '2',
        'TERCA': '3', 
@@ -35,7 +41,7 @@ export class GerarHorarioConsolidadoUseCase {
        'SABADO': '7'
      };
 
-    // Agrupar alocações por dia da semana
+
     const alocacoesPorDia = new Map<string, typeof alocacoes>();
     
     for (const alocacao of alocacoes) {
@@ -51,119 +57,120 @@ export class GerarHorarioConsolidadoUseCase {
       }
     }
 
-    // Processar cada dia e gerar padrões de horário
+
     const padroesPorHorario = new Map<string, string[]>();
     
     for (const [dia, alocacoesDoDia] of alocacoesPorDia) {
-      // Ordenar por código do horário para garantir sequência
-      alocacoesDoDia.sort((a, b) => a.horario.codigo.localeCompare(b.horario.codigo));
-      
       const codigosDia = diasMap[dia];
       if (!codigosDia) continue;
-      
-      const primeiraAlocacao = alocacoesDoDia[0];
-      if (!primeiraAlocacao?.horario?.codigo) continue;
-      
-      const turno = primeiraAlocacao.horario.codigo.charAt(0); // M, T, N
-      
-      // Obter códigos dos horários e verificar sequencialidade
-      const codigosHorarios = alocacoesDoDia.map(alocacao => alocacao.horario.codigo).sort();
-      const numerosHorarios = codigosHorarios.map(codigo => parseInt(codigo.charAt(1)));
-      
-      // Verificar se os números são sequenciais
-      const saoSequenciais = this.verificarSequenciais(numerosHorarios.map(n => n.toString()));
-      
-      let padraoHorario: string;
-      
-      if (codigosHorarios.length === 1) {
-        // Aula isolada - usar apenas o número do horário
-        const numeroHorario = numerosHorarios[0];
-        padraoHorario = `${turno}${numeroHorario}`;
-      } else if (saoSequenciais) {
-        // Múltiplas aulas sequenciais - usar todos os números
-        const sequenciaNumerica = numerosHorarios.join('');
-        padraoHorario = `${turno}${sequenciaNumerica}`;
-      } else {
-        // Múltiplas aulas não sequenciais - tratar cada uma separadamente
-        numerosHorarios.forEach(numero => {
-          const padraoIndividual = `${turno}${numero}`;
-          if (!padroesPorHorario.has(padraoIndividual)) {
-            padroesPorHorario.set(padraoIndividual, []);
-          }
-          const padraoArray = padroesPorHorario.get(padraoIndividual);
-          if (padraoArray) {
-            padraoArray.push(codigosDia);
-          }
-        });
-        continue; // Pular o resto do loop para este dia
-      }
-      
-      if (!padroesPorHorario.has(padraoHorario)) {
-        padroesPorHorario.set(padraoHorario, []);
-      }
-      const padraoArray = padroesPorHorario.get(padraoHorario);
-      if (padraoArray) {
-        padraoArray.push(codigosDia);
-      }
+
+      const codigosHorarios = alocacoesDoDia
+        .map((alocacao) => alocacao.horario?.codigo)
+        .filter((codigo): codigo is string => Boolean(codigo))
+        .sort((a, b) => this.compareHorarioCodigo(a, b));
+
+      if (codigosHorarios.length === 0) continue;
+
+      const gruposDoDia = this.agruparSequenciasConsecutivas(codigosHorarios);
+
+      gruposDoDia.forEach((grupo) => {
+        if (!padroesPorHorario.has(grupo)) {
+          padroesPorHorario.set(grupo, []);
+        }
+
+        const padraoArray = padroesPorHorario.get(grupo);
+        if (padraoArray) {
+          padraoArray.push(codigosDia);
+        }
+      });
     }
 
-    // Gerar horários consolidados agrupando dias consecutivos com mesmo padrão
-    const horariosConsolidados: string[] = [];
-    
-    for (const [padraoHorario, diasCodigos] of padroesPorHorario) {
-      if (diasCodigos.length === 1) {
-        horariosConsolidados.push(`${diasCodigos[0]}${padraoHorario}`);
-      } else {
-        // Verificar se os dias são consecutivos
-        const diasNumericos = diasCodigos.map(d => parseInt(d)).sort((a, b) => a - b);
-        const saoConsecutivos = this.verificarDiasConsecutivos(diasNumericos);
-        
-        if (saoConsecutivos && diasNumericos.length > 1) {
-           const primeiroDay = diasNumericos[0];
-           const ultimoDay = diasNumericos[diasNumericos.length - 1];
-           horariosConsolidados.push(`${primeiroDay}${ultimoDay}${padraoHorario}`);
-         } else {
-          // Dias não consecutivos, manter separados
-          for (const dia of diasCodigos) {
-            horariosConsolidados.push(`${dia}${padraoHorario}`);
-          }
-        }
-      }
-    }
+
+    const horariosConsolidados = [...padroesPorHorario.entries()]
+      .map(([padraoHorario, diasCodigos]) => {
+        const diasOrdenados = [...new Set(diasCodigos)].sort(
+          (a, b) => parseInt(a, 10) - parseInt(b, 10),
+        );
+        return `${diasOrdenados.join("")}${padraoHorario}`;
+      })
+      .sort((a, b) => this.compareHorarioConsolidado(a, b));
 
     return { horarioConsolidado: horariosConsolidados.join(', ') };
   }
 
-  private verificarSequencialidade(alocacoes: any[]): string[] {
-    return alocacoes.map(alocacao => alocacao.horario.codigo);
+  private agruparSequenciasConsecutivas(codigosHorarios: string[]): string[] {
+    const grupos: string[] = [];
+    let grupoAtual: string[] = [];
+
+    codigosHorarios.forEach((codigo) => {
+      if (grupoAtual.length === 0) {
+        grupoAtual = [codigo];
+        return;
+      }
+
+      const ultimo = grupoAtual[grupoAtual.length - 1];
+      const mesmoTurno = ultimo?.charAt(0) === codigo.charAt(0);
+      const consecutivo =
+        parseInt(codigo.slice(1), 10) === parseInt(ultimo?.slice(1) ?? "0", 10) + 1;
+
+      if (mesmoTurno && consecutivo) {
+        grupoAtual.push(codigo);
+        return;
+      }
+
+      grupos.push(this.formatarGrupo(grupoAtual));
+      grupoAtual = [codigo];
+    });
+
+    if (grupoAtual.length > 0) {
+      grupos.push(this.formatarGrupo(grupoAtual));
+    }
+
+    return grupos;
   }
 
-  private verificarSequenciais(numeros: string[]): boolean {
-    if (numeros.length <= 1) return true;
-    
-    const numerosOrdenados = numeros.map(n => parseInt(n)).sort((a, b) => a - b);
-    
-    for (let i = 1; i < numerosOrdenados.length; i++) {
-      const numeroAtual = numerosOrdenados[i];
-      const numeroAnterior = numerosOrdenados[i - 1];
-      if (numeroAtual !== undefined && numeroAnterior !== undefined && numeroAtual !== numeroAnterior + 1) {
-        return false;
-      }
-    }
-    
-    return true;
+  private formatarGrupo(codigosHorarios: string[]): string {
+    const turno = codigosHorarios[0]?.charAt(0) ?? "";
+    const numeros = codigosHorarios.map((codigo) => codigo.slice(1)).join("");
+    return `${turno}${numeros}`;
   }
 
-  private verificarDiasConsecutivos(dias: number[]): boolean {
-    if (dias.length <= 1) return true;
-    
-    for (let i = 1; i < dias.length; i++) {
-      const diaAtual = dias[i];
-      const diaAnterior = dias[i - 1];
-      if (diaAtual !== undefined && diaAnterior !== undefined && diaAtual !== diaAnterior + 1) {
-        return false;
-      }
+  private compareHorarioCodigo(a: string, b: string): number {
+    const turnoA = a.charAt(0);
+    const turnoB = b.charAt(0);
+
+    if (turnoA !== turnoB) {
+      return (this.turnoOrder[turnoA] ?? 99) - (this.turnoOrder[turnoB] ?? 99);
     }
-    return true;
+
+    return parseInt(a.slice(1), 10) - parseInt(b.slice(1), 10);
+  }
+
+  private compareHorarioConsolidado(a: string, b: string): number {
+    const matchA = a.match(/^(\d+)([A-Z])(\d+)$/);
+    const matchB = b.match(/^(\d+)([A-Z])(\d+)$/);
+
+    if (!matchA || !matchB) {
+      return a.localeCompare(b, "pt-BR");
+    }
+
+    const diasA = matchA[1]!;
+    const turnoA = matchA[2]!;
+    const numerosA = matchA[3]!;
+    const diasB = matchB[1]!;
+    const turnoB = matchB[2]!;
+    const numerosB = matchB[3]!;
+    const primeiroDiaA = parseInt(diasA.charAt(0), 10);
+    const primeiroDiaB = parseInt(diasB.charAt(0), 10);
+
+    if (primeiroDiaA !== primeiroDiaB) {
+      return primeiroDiaA - primeiroDiaB;
+    }
+
+    if (turnoA !== turnoB) {
+      return (this.turnoOrder[turnoA] ?? 99) - (this.turnoOrder[turnoB] ?? 99);
+    }
+
+    return parseInt(numerosA, 10) - parseInt(numerosB, 10);
   }
 }

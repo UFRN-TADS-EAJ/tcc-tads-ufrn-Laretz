@@ -55,9 +55,9 @@ export function TurmaDialog({
             e.preventDefault();
             onSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 w-full min-w-0"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <Label htmlFor="nome">Nome da Turma</Label>
             <Input
               id="nome"
@@ -68,7 +68,7 @@ export function TurmaDialog({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <Label htmlFor="num_alunos">Número de Alunos</Label>
             <Input
               id="num_alunos"
@@ -85,7 +85,7 @@ export function TurmaDialog({
             />
           </div>
 
-          <div className="space-y-2">
+           <div className="space-y-2 min-w-0">
             <Label htmlFor="semestre">Semestre</Label>
             <Input
               id="semestre"
@@ -102,14 +102,14 @@ export function TurmaDialog({
             />
           </div>
 
-          <div className="space-y-2">
+           <div className="space-y-2 min-w-0">
             <Label htmlFor="turno">Turno</Label>
             <Select
               value={formData.turno}
               onValueChange={(value) => setFormData({ ...formData, turno: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full min-w-0">
                 <SelectValue placeholder="Selecione o turno" />
               </SelectTrigger>
               <SelectContent>
@@ -121,17 +121,17 @@ export function TurmaDialog({
             </Select>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <Label htmlFor="id_curso">Curso</Label>
             <Select
               value={formData.id_curso}
               onValueChange={(value) => setFormData({ ...formData, id_curso: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full min-w-0">
                 <SelectValue placeholder="Selecione um curso" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-w-[min(24rem,var(--radix-select-trigger-width))]">
                 {cursos.map((curso) => (
                   <SelectItem key={curso.id} value={curso.id}>
                     {curso.nome} - {curso.turno}
@@ -141,7 +141,7 @@ export function TurmaDialog({
             </Select>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2 flex-wrap">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>

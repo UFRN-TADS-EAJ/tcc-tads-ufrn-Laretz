@@ -99,12 +99,63 @@ export function useReservas() {
     };
   }, [diaSelecionado, previewGrade, isCodigoOcupado, reservasOcupadasSet]);
 
-  const periodoConsultaId = useMemo(() => {
-    if (typeof window === "undefined") return undefined;
-    const modo = window.localStorage.getItem("periodo.modo");
-    if (modo !== "consulta") return undefined;
-    return window.localStorage.getItem("periodo.consultaId") || undefined;
-  }, []);
+  const previewGradeComReservas = useMemo(() => {
+    if (!previewGrade) return previewGrade;
+
+    const merged: GradeHorario = Object.fromEntries(
+      Object.entries(previewGrade).map(([dia, codigos]) => [
+        dia,
+        Object.fromEntries(
+          Object.entries(codigos).map(([codigo, alocacoes]) => [codigo, [...alocacoes]]),
+        ),
+      ]),
+    );
+
+    reservasOcupadasHorarioIds.forEach((horarioId) => {
+      const horario = horarios.find((item) => item.id === horarioId);
+      if (!horario) return;
+
+      const dia = horario.dia_semana;
+      const codigo = horario.codigo;
+
+      if (!merged[dia]) {
+        merged[dia] = {};
+      }
+
+      const existente = merged[dia]?.[codigo];
+      if (existente && existente.length > 0) return;
+
+      merged[dia]![codigo] = [
+        {
+          id: `reserva-preview-${horario.id}`,
+          id_user: "",
+          id_disciplina: "",
+          id_turma: "",
+          id_sala: salaSelecionadaId || "",
+          id_horario: horario.id,
+          is_modulo_principal: false,
+          created_at: new Date().toISOString(),
+          user: { id: "", nome: "Reservado", email: "", role: "ADMIN" },
+          disciplina: {
+            id: "__RESERVA__",
+            nome: "Reserva",
+            codigo: "RES",
+            carga_horaria: 0,
+            total_aulas: 0,
+            aulas_ministradas: 0,
+            periodo_letivo: "",
+            semestre: 0,
+            obrigatoria: false,
+            id_curso: "",
+            tipo_de_sala: "Sala",
+          },
+          horario,
+        },
+      ];
+    });
+
+    return merged;
+  }, [previewGrade, reservasOcupadasHorarioIds, horarios, salaSelecionadaId]);
 
   const getSalaNome = (r: ReservaSala) => {
     return r.sala?.nome || salas.find((s) => s.id === r.salaId)?.nome || "—";
@@ -136,7 +187,7 @@ export function useReservas() {
       try {
         const [salasAll, horariosAll] = await Promise.all([
           salaService.getAll(1).catch(() => ({ salas: [] as Sala[] })),
-          horarioService.getAll().catch(() => [] as Horario[]),
+          horarioService.getAll("SUPERIOR").catch(() => [] as Horario[]),
         ]);
         setSalas(salasAll.salas || []);
         setHorarios(horariosAll || []);
@@ -201,7 +252,6 @@ export function useReservas() {
       try {
         const grade = await alocacaoService.getGradeHorarios({
           id_sala: salaSelecionadaId,
-          periodoId: periodoConsultaId || undefined,
         });
         setPreviewGrade(grade);
       } catch {
@@ -213,7 +263,7 @@ export function useReservas() {
     };
 
     fetchPreview();
-  }, [criarOpen, periodoConsultaId, salaSelecionadaId]);
+  }, [criarOpen, salaSelecionadaId]);
 
   useEffect(() => {
     if (!criarOpen) return;
@@ -249,7 +299,7 @@ export function useReservas() {
     const recurrenceOk =
       novaReserva.recurrenceRule !== "WEEKLY" ||
       (!!novaReserva.recurrenceEnd && novaReserva.recurrenceEnd >= novaReserva.date!);
-    const previewOk = !previewLoading && !previewError && !!previewGrade;
+    const previewOk = !previewLoading && !previewError && !!previewGradeComReservas;
     return base && recurrenceOk && previewOk && !conflitoMensagem && !verificandoConflito;
   }, [
     novaReserva.salaId,
@@ -262,7 +312,7 @@ export function useReservas() {
     verificandoConflito,
     previewLoading,
     previewError,
-    previewGrade,
+    previewGradeComReservas,
   ]);
 
   const criarReserva = async () => {
@@ -354,7 +404,7 @@ export function useReservas() {
     verificandoConflito,
     conflitoMensagem,
     setConflitoMensagem,
-    previewGrade,
+    previewGrade: previewGradeComReservas,
     previewLoading,
     previewError,
     diaSelecionado,

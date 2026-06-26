@@ -286,7 +286,7 @@ export default function DashboardPage() {
                 {getGreeting()}, {user?.nome}!
               </h1>
               <p className="text-muted-foreground">
-                Bem-vindo ao Sistema de Alocação Acadêmica
+                Bem-vindo ao Alocações EAJ
               </p>
             </div>
           </div>

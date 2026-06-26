@@ -261,7 +261,9 @@ export function UserForm({
                   type="number"
                   min="1"
                   max="40"
-                  {...register("cargaHorariaMax", { valueAsNumber: true })}
+                  {...register("cargaHorariaMax", {
+                    setValueAs: (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+                  })}
                   placeholder="Horas por semana"
                   disabled={isLoading}
                 />

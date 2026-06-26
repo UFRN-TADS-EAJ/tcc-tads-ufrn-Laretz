@@ -43,8 +43,9 @@ interface MainLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Usuários", href: "/usuarios", icon: Users, adminOnly: true },
-  { name: "Cursos", href: "/cursos", icon: School, adminOnly: true },
   { name: "Prédios", href: "/predios", icon: Building, adminOnly: true },
+   { name: "Salas", href: "/salas", icon: MapPin },
+   { name: "Cursos", href: "/cursos", icon: School, adminOnly: true },
   { name: "Disciplinas", href: "/disciplinas", icon: BookOpen },
   {
     name: "Disciplinas por Prof.",
@@ -53,9 +54,10 @@ const navigation = [
     adminOnly: true,
   },
   { name: "Turmas", href: "/turmas", icon: GraduationCap },
-  { name: "Salas", href: "/salas", icon: MapPin },
-  { name: "Reservas", href: "/reservas", icon: CalendarPlus },
+ 
+  
   { name: "Alocações", href: "/alocacoes", icon: Calendar, adminOnly: true },
+  { name: "Reservas", href: "/reservas", icon: CalendarPlus },
   {
     name: "Feedbacks",
     href: "/admin/feedbacks",
@@ -115,7 +117,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <h1 className="text-xl font-bold text-foreground">
-                Sistema Acadêmico
+                Alocações EAJ
               </h1>
             </div>
             <nav className="mt-8 flex-1 space-y-1 px-2">
@@ -172,7 +174,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
               <div className="flex flex-shrink-0 items-center px-4">
                 <h1 className="text-xl font-bold text-foreground">
-                  Sistema Acadêmico
+                  Alocações EAJ
                 </h1>
               </div>
               <nav className="mt-8 flex-1 space-y-1 px-2">

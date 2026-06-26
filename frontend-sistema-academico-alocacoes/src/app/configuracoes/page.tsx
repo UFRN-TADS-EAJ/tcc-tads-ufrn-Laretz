@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,7 @@ import { useAuthStore } from "@/store/auth";
 import { periodoLetivoService } from "@/services/entities";
 import type { PeriodoLetivo } from "@/types/entities";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, RefreshCcw, Timer, ArrowLeft } from "lucide-react";
+import { Timer, ArrowLeft } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,40 +30,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-type PeriodoModo = "operacional" | "consulta";
-
-function getPeriodoModo(): PeriodoModo {
-  if (typeof window === "undefined") return "operacional";
-  const raw = window.localStorage.getItem("periodo.modo");
-  return raw === "consulta" ? "consulta" : "operacional";
-}
-
-function getPeriodoConsultaId(): string {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem("periodo.consultaId") || "";
-}
-
-function setPeriodoModo(modo: PeriodoModo) {
-  window.localStorage.setItem("periodo.modo", modo);
-  if (modo === "operacional") {
-    window.localStorage.removeItem("periodo.consultaId");
-  }
-}
-
-function setPeriodoConsultaId(periodoId: string) {
-  window.localStorage.setItem("periodo.consultaId", periodoId);
-}
-
 export default function ConfiguracoesPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [periodoAtivo, setPeriodoAtivo] = useState<PeriodoLetivo | null>(null);
   const [periodos, setPeriodos] = useState<PeriodoLetivo[]>([]);
-  const [loadingPeriodo, setLoadingPeriodo] = useState(true);
   const [errorPeriodo, setErrorPeriodo] = useState<string | null>(null);
-
-  const [modo, setModo] = useState<PeriodoModo>("operacional");
-  const [periodoConsultaId, setPeriodoConsultaIdState] = useState<string>("");
 
   const [periodoSelecionadoId, setPeriodoSelecionadoId] = useState<string>("");
   const [advanceForm, setAdvanceForm] = useState<{
@@ -72,31 +42,6 @@ export default function ConfiguracoesPage() {
     data_inicio: string;
     data_fim: string;
   }>({ nome: "", data_inicio: "", data_fim: "" });
-
-  useEffect(() => {
-    setModo(getPeriodoModo());
-    setPeriodoConsultaIdState(getPeriodoConsultaId());
-  }, []);
-
-  useEffect(() => {
-    async function fetchPeriodoAtivo() {
-      setLoadingPeriodo(true);
-      setErrorPeriodo(null);
-      try {
-        const resp = await periodoLetivoService.getActive();
-        setPeriodoAtivo(resp.periodo);
-      } catch (err: unknown) {
-        setPeriodoAtivo(null);
-        setErrorPeriodo(
-          err instanceof Error ? err.message : "Falha ao carregar período letivo ativo",
-        );
-      } finally {
-        setLoadingPeriodo(false);
-      }
-    }
-
-    fetchPeriodoAtivo();
-  }, []);
 
   useEffect(() => {
     async function fetchPeriodos() {
@@ -116,31 +61,12 @@ export default function ConfiguracoesPage() {
     fetchPeriodos();
   }, [user?.role, periodoSelecionadoId]);
 
-  const periodosParaConsulta = useMemo(() => {
-    return periodos.slice().sort((a, b) => a.nome.localeCompare(b.nome));
-  }, [periodos]);
-
   const periodoSelecionado = useMemo(() => {
     return periodos.find((p) => p.id === periodoSelecionadoId) || null;
   }, [periodos, periodoSelecionadoId]);
-
-  const periodoConsulta = useMemo(() => {
-    return periodos.find((p) => p.id === periodoConsultaId) || null;
-  }, [periodos, periodoConsultaId]);
-
-  async function handleAtivarPeriodo() {
-    if (user?.role !== "ADMIN") return;
-    if (!periodoSelecionadoId) return;
-    setErrorPeriodo(null);
-    try {
-      const resp = await periodoLetivoService.activate(periodoSelecionadoId);
-      setPeriodoAtivo(resp.periodo);
-      const listResp = await periodoLetivoService.list();
-      setPeriodos(listResp.periodos || []);
-    } catch (err: unknown) {
-      setErrorPeriodo(err instanceof Error ? err.message : "Falha ao ativar período letivo");
-    }
-  }
+  const periodoAtivo = useMemo(() => {
+    return periodos.find((p) => p.ativo) || null;
+  }, [periodos]);
 
   async function handleAvancarPeriodo() {
     if (user?.role !== "ADMIN") return;
@@ -150,29 +76,12 @@ export default function ConfiguracoesPage() {
     }
     setErrorPeriodo(null);
     try {
-      const resp = await periodoLetivoService.advance(advanceForm);
-      setPeriodoAtivo(resp.periodo);
+      await periodoLetivoService.advance(advanceForm);
       const listResp = await periodoLetivoService.list();
       setPeriodos(listResp.periodos || []);
       setAdvanceForm({ nome: "", data_inicio: "", data_fim: "" });
     } catch (err: unknown) {
       setErrorPeriodo(err instanceof Error ? err.message : "Falha ao avançar período letivo");
-    }
-  }
-
-  function handleSetModo(next: PeriodoModo) {
-    setModo(next);
-    setPeriodoModo(next);
-    if (next === "operacional") {
-      setPeriodoConsultaIdState("");
-    }
-  }
-
-  function handleSetPeriodoConsultaId(nextId: string) {
-    setPeriodoConsultaIdState(nextId);
-    setPeriodoConsultaId(nextId);
-    if (modo !== "consulta") {
-      handleSetModo("consulta");
     }
   }
 
@@ -197,111 +106,43 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" /> Período Letivo
-              </CardTitle>
-              <CardDescription>
-                Contexto do sistema (operacional) e visualização (consulta).
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loadingPeriodo && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4 animate-spin" /> Carregando...
-                </div>
-              )}
-              {!loadingPeriodo && errorPeriodo && (
-                <p className="text-sm text-destructive">{errorPeriodo}</p>
-              )}
-              {!loadingPeriodo && !errorPeriodo && (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground">Ativo</p>
-                      <p className="text-base font-semibold text-foreground truncate">
-                        {periodoAtivo?.nome || "Nenhum período ativo"}
-                      </p>
-                      {periodoAtivo && (
-                        <p className="text-xs text-muted-foreground">
-                          {periodoAtivo.data_inicio} → {periodoAtivo.data_fim}
-                        </p>
-                      )}
-                    </div>
-                    {periodoAtivo && (
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{periodoAtivo.status}</Badge>
-                        <Badge variant={periodoAtivo.ativo ? "secondary" : "outline"}>
-                          {periodoAtivo.ativo ? "ATIVO" : "INATIVO"}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Modo</Label>
-                      <Select value={modo} onValueChange={(v) => handleSetModo(v as PeriodoModo)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o modo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="operacional">Operacional</SelectItem>
-                          <SelectItem value="consulta">Consulta</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Consulta afeta apenas telas de Grade (Turmas/Salas/Professor).
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Período (consulta)</Label>
-                      <Select
-                        value={periodoConsultaId}
-                        onValueChange={handleSetPeriodoConsultaId}
-                        disabled={user?.role !== "ADMIN"}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={
-                              user?.role === "ADMIN"
-                                ? "Selecione um período"
-                                : "Disponível apenas para ADMIN"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {periodosParaConsulta.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.nome} ({p.status})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {modo === "consulta" && periodoConsulta && (
-                        <p className="text-xs text-muted-foreground">
-                          Consultando: {periodoConsulta.nome}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
+        <div className="mx-auto w-full max-w-3xl">
           {user?.role === "ADMIN" && (
             <Card>
               <CardHeader>
                 <CardTitle>Ações de Admin</CardTitle>
-                <CardDescription>Ativar ou avançar período letivo.</CardDescription>
+                <CardDescription>
+                  Consulte os períodos já criados e avance para o próximo quando o período atual
+                  encerrar.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Ativar período</Label>
+              <CardContent className="space-y-6">
+                {errorPeriodo && <p className="text-sm text-destructive">{errorPeriodo}</p>}
+
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    Período ativo no momento
+                  </p>
+                  <p className="mt-1 text-base font-semibold text-foreground">
+                    {periodoAtivo?.nome || "Nenhum período ativo"}
+                  </p>
+                  {periodoAtivo && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Vigência: {periodoAtivo.data_inicio} até {periodoAtivo.data_fim}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Períodos anteriores podem ser consultados na página de grade de horários.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label>Períodos criados</Label>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Esta lista é apenas informativa para consulta do histórico cadastrado.
+                    </p>
+                  </div>
                   <Select value={periodoSelecionadoId} onValueChange={setPeriodoSelecionadoId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione um período" />
@@ -314,24 +155,35 @@ export default function ConfiguracoesPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {periodoSelecionado?.status === "ENCERRADO" && (
-                    <p className="text-xs text-destructive">
-                      Este período está encerrado e não pode ser ativado.
-                    </p>
+
+                  {periodoSelecionado && (
+                    <div className="rounded-lg border p-4">
+                      <p className="text-sm font-medium text-foreground">
+                        {periodoSelecionado.nome}
+                      </p>
+                      <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        <p>Status: {periodoSelecionado.status}</p>
+                        <p>
+                          Vigência: {periodoSelecionado.data_inicio} até{" "}
+                          {periodoSelecionado.data_fim}
+                        </p>
+                        <p>
+                          Situação operacional:{" "}
+                          {periodoSelecionado.ativo ? "Período atualmente ativo" : "Período não ativo"}
+                        </p>
+                      </div>
+                    </div>
                   )}
-                  <Button
-                    onClick={handleAtivarPeriodo}
-                    variant="outline"
-                    className="w-full"
-                    disabled={periodoSelecionado?.status === "ENCERRADO"}
-                  >
-                    <RefreshCcw className="h-4 w-4 mr-2" />
-                    Ativar
-                  </Button>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Avançar período</Label>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Avançar período</Label>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Use esta ação apenas ao iniciar um novo período letivo. O período atual será
+                      encerrado e o novo passará a ser o período ativo do sistema.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
                       className="sm:col-span-3"
@@ -364,7 +216,8 @@ export default function ConfiguracoesPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Confirmar avanço de período</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Ao avançar, o período ativo atual será encerrado e não deverá mais ser alterado.
+                            Ao confirmar, o período ativo atual será encerrado e o novo período
+                            informado passará a ser usado nas operações do sistema.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

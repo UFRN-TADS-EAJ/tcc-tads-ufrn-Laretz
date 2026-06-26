@@ -57,6 +57,23 @@ export class BuscarGradeHorariosSalaUseCase {
     private periodosRepository: PeriodosLetivosRepository,
   ) {}
 
+  private async fetchAllPages<T>(
+    fetcher: (page: number) => Promise<T[]>,
+    opts?: { pageSize?: number; maxPages?: number },
+  ): Promise<T[]> {
+    const pageSize = opts?.pageSize ?? 20;
+    const maxPages = opts?.maxPages ?? 50;
+    const all: T[] = [];
+
+    for (let page = 1; page <= maxPages; page++) {
+      const chunk = await fetcher(page);
+      all.push(...chunk);
+      if (chunk.length < pageSize) break;
+    }
+
+    return all;
+  }
+
   async execute({
     salaId,
     periodoId,
@@ -74,10 +91,8 @@ export class BuscarGradeHorariosSalaUseCase {
     }
 
     // Buscar todas as alocações da sala com relacionamentos
-    const alocacoes = await this.alocacoesRepository.findBySalaId(
-      salaId,
-      1,
-      periodo.id,
+     const alocacoes = await this.fetchAllPages((page) =>
+      this.alocacoesRepository.findBySalaId(salaId, page, periodo.id),
     );
 
     // Inicializar grade vazia

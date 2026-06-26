@@ -82,10 +82,10 @@ export function ReservasFeature() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label>Sala</Label>
                 <Select value={state.filtroSalaId} onValueChange={state.setFiltroSalaId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todas as salas" />
                   </SelectTrigger>
                   <SelectContent>
@@ -97,10 +97,10 @@ export function ReservasFeature() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Horário</Label>
                 <Select value={state.filtroHorarioId} onValueChange={state.setFiltroHorarioId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todos os horários" />
                   </SelectTrigger>
                   <SelectContent>
@@ -112,13 +112,21 @@ export function ReservasFeature() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Data inicial</Label>
-                <Input type="date" value={state.filtroDe} onChange={(e) => state.setFiltroDe(e.target.value)} />
+                <Input
+                  type="date"
+                  value={state.filtroDe}
+                  onChange={(e) => state.setFiltroDe(e.target.value)}
+                />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>Data final</Label>
-                <Input type="date" value={state.filtroAte} onChange={(e) => state.setFiltroAte(e.target.value)} />
+                <Input
+                  type="date"
+                  value={state.filtroAte}
+                  onChange={(e) => state.setFiltroAte(e.target.value)}
+                />
               </div>
             </div>
 
